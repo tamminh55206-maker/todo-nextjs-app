@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -15,20 +15,19 @@ import { v4 as uuidv4 } from "uuid";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function Home() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("todo-tasks");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [inputValue, setInputValue] = useState("");
   const [filter, setFilter] = useState("all");
-  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("todo-tasks");
-    if (saved) setTasks(JSON.parse(saved));
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) localStorage.setItem("todo-tasks", JSON.stringify(tasks));
-  }, [tasks, isLoaded]);
+    localStorage.setItem("todo-tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const addTask = (e) => {
     e.preventDefault();
@@ -58,7 +57,6 @@ export default function Home() {
       : true
   );
 
-  if (!isLoaded) return null;
 
   return (
     <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1518655048521-f130df041f66?q=80&w=2000')] bg-cover bg-center flex items-center justify-center p-4 sm:p-8 font-sans">
